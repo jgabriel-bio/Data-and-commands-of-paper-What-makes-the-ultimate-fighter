@@ -1,11 +1,6 @@
 # Title of the document
 What makes the ultimate fighter? Unpacking boxes in assessment strategies in contests of males of the dragonfly Perithemis tenera
 
-# Authors
-Almeida, J.G.L. (jgabriel.bio2@gmail.com)
-Guillermo-Ferreira, R. (rhainerguillermo@gmail.com)
-Peixoto, P.E.C. (pauloenrique@gmail.com) * corresponding author
-
 # GENERAL INFORMATION #
 
 ### About the data
