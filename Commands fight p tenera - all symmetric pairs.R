@@ -58,6 +58,18 @@ library(car)
 
 
 ####FULL MODEL####
+#We tried create a glm with different families, as Gamma, since the response is bounded at zero.
+
+model_glm=glm(overall_contest_duration~scaled_winner_total_fat_weight+scaled_loser_total_fat_weight+territory_value_index, family = "Gamma" ,data=fight)
+
+plot(model_glm, which = 1, lty = 0) #Residual distribution also did not perfectly fit
+
+#We try to correct residuals variance log-transforming the response
+
+model_log=lm(log(overall_contest_duration)~scaled_winner_total_fat_weight+scaled_loser_total_fat_weight+territory_value_index, data=fight)
+
+plot(model_log, which = 1, lty = 0) #Residual distribution was similar to GLS, but this approach change the nature of response variable, therefore we prefer to perform a GLS that maintain the response variable to avoid potential changes in estimated parameters
+
 #Model with GLS (Generalised linear squares)
 model_1=gls(overall_contest_duration~scaled_winner_total_fat_weight+scaled_loser_total_fat_weight+territory_value_index, weights=varPower(form=~scaled_winner_total_fat_weight), data=fight)
 
@@ -288,6 +300,7 @@ ggplot(fight, aes(x=territory_value_index, y=overall_contest_duration)) +
   scale_y_continuous(breaks = seq(50, max(fight$overall_contest_duration), by = 500)) + # Adjust the 'by' value as needed
   annotate("text", x = -Inf, y = Inf, label = "c)", hjust = -0.6, vjust = 1.5, size = 4, fontface = "bold") 
 dev.off()
+
 
 
 
