@@ -157,3 +157,112 @@ cat("Valid permutations:", valid_permutations, "out of", n_permutations, "\n")
 #SD null modularity: 0.03
 #Z-score: 1.2
 #P-value: 0.10
+
+
+########Creating the network diagram#########
+
+#####Creating the transitional probability values####
+
+# These permutations preserve:
+# - row sums = frequency each behavior precedes another
+# - column sums = frequency each behavior follows another
+# Thus preventing biologically impossible transitions
+# (e.g., transitions into Intruder approach or out of Loser flew away)
+
+
+library(vegan)
+
+set.seed(123)
+
+randomized <- permatfull(
+  m = adjacency.matrix,
+  fix = "both",      # fixes row and column sums
+  shuffle = "both",
+  times = 1000       # number of null models
+)
+
+#Save the generated matrices
+randomized_matrices <- randomized$perm
+
+# Convert list of 1000 matrices to 11×11×1000 array
+randomized_matrices <- simplify2array(randomized_matrices)
+dim(randomized_matrices)   # should be 11 11 1000
+
+
+#####Computing quantiles for each behavioral transition ######
+
+# Getting 2.5% and 97.5% quantiles for each cell across random permutations
+quant_array <- apply(
+  randomized_matrices,
+  c(1,2),
+  quantile,
+  probs = c(0.025, 0.975)
+)
+
+# Reshaping matrices
+quantiles <- matrix(quant_array, ncol = 2, byrow = FALSE)
+colnames(quantiles) <- c("lowCI_2.5%", "highCI_97.5%")
+
+low  <- matrix(quantiles[,1], nrow = 11, byrow = FALSE)
+high <- matrix(quantiles[,2], nrow = 11, byrow = FALSE)
+
+
+#Renaming the low and high quantile datasets to match row and column names of the observed adjacency matrix
+colnames(low)<-colnames(adjacency.matrix)
+rownames(low)<-colnames(adjacency.matrix)
+colnames(high)<-colnames(adjacency.matrix)
+rownames(high)<-colnames(adjacency.matrix)
+
+# Calculating transitional probabilities from the observed dataset
+
+#For this, first we calculed the transtions probabibily of our observed matrix, dividing each cell number of our observed column by row sum. After that, we isolated the transitions that occurs more than expected by chance.
+
+#pulling out the transitional probability values from the observed matrix
+trans.prob<-round(adjacency.matrix/rowSums(adjacency.matrix),2) 
+trans.prob[is.nan(trans.prob)]<-0 #replace any NaN values with 0
+trans.prob
+
+#To maintain the frequency of each behavior, we isolated the transition that occurs more than expected. For this, we simplify the data set to keep only those cell values where adjancecy matrix is greater or equal to high quantile of the null matrix.
+
+#keep the original transitional probabilities, i.e. before simplification
+#Transitions observed that have a greater probabilty than expected
+keep_high<-ifelse(adjacency.matrix>=high,trans.prob,0) 
+
+#Calculating frequency of each behavior (nodes size in the figure)
+# Calculate row sums (total counts for each behavior)
+
+behavior_frequency <- colSums(adjacency.matrix)
+#Intruder approach
+31/(31+212+157+89+175+70+83+90+105+15+31) #31/1058
+#3%
+#Frequency of Cospecific identification
+157/(212+157+89+175+70+83+90+105+15)
+#16%
+#Frequency of Bounce
+83/(212+157+89+175+70+83+90+105+15)
+#8%
+#Frequency of Oviposition site probing
+90/(212+157+89+175+70+83+90+105+15)
+#9%
+#Frequency of Pursuit Flight
+212/(212+157+89+175+70+83+90+105+15)
+#21%
+#Frequency of Hover
+105/(212+157+89+175+70+83+90+105+15)
+#10%
+#Frequency of Pursuit Flight Escalated
+175/(212+157+89+175+70+83+90+105+15)
+#16%
+#Frequency of Circle Chase
+89/(212+157+89+175+70+83+90+105+15)
+#9%
+#Frequency of Physical Agression
+70/(212+157+89+175+70+83+90+105+15)
+#7%
+#Frequency of Out of sight
+15/(212+157+89+175+70+83+90+105+15)
+#1%
+#Frequency of End of the contest
+31/(31+212+157+89+175+70+83+90+105+15+31)
+#3%
+
